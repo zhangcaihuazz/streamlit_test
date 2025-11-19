@@ -1,27 +1,19 @@
 import streamlit as st
 
-# 绝对最简配置
-st.set_page_config(
-    page_title="移动端诊断",
-    layout="centered"
-)
+# 设置页面标题
+st.set_page_config(page_title="Streamlit 测试应用", layout="centered")
 
-st.title("移动端诊断页面")
+# 显示标题
+st.title("欢迎使用 Streamlit!")
 
-# 测试1: 纯文本
-st.write("这是纯文本")
+# 显示一段文本
+st.write("这是一个测试应用，用来确认在手机和桌面端的表现。")
 
-# 测试2: 不使用任何列布局
-st.write("不使用列布局")
+# 添加一个按钮
+if st.button('点击我'):
+    st.write("你点击了按钮！")
 
-# 测试3: 不使用任何自定义导入
-st.success("不使用自定义模块")
-
-# 测试4: 不使用任何表单
-st.info("不使用表单")
-
-# 测试5: 只使用最基本组件
-if st.button("测试按钮"):
-    st.write("按钮被点击了！")
-
-st.write("页面结束")
+# 显示文本输入框
+name = st.text_input("请输入你的名字：")
+if name:
+    st.write(f"你好，{name}！")
