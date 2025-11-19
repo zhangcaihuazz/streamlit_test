@@ -7,7 +7,6 @@
 
 # 导入必要的Python标准库模块
 import streamlit as st  # 用于构建Web应用的Python框架
-import streamlit.components.v1 as components
 import sys  # 提供对Python解释器相关功能的访问
 import os  # 提供与操作系统交互的功能
 
@@ -16,40 +15,91 @@ import os  # 提供与操作系统交互的功能
 sys.path.append(os.path.join(os.path.dirname(__file__), 'modules'))  # 添加modules文件夹路径
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))  # 添加utils文件夹路径
 
-st.markdown(
-    """
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    """,
-    unsafe_allow_html=True
-)
-
-# 设置Streamlit页面配置
+# 设置Streamlit页面配置 - 必须在任何st.调用之前
 st.set_page_config(
     page_title="血糖胰岛素控制程序",  # 浏览器标签页显示的标题
     page_icon="🩸",  # 浏览器标签页显示的图标（血液emoji）
-    layout="wide",  # 使用中心布局模式
+    layout="centered",  # 改为centered布局，更适合移动端
+    initial_sidebar_state="collapsed"  # 移动端默认收起侧边栏
 )
 
+# 强制移动端适配的CSS - 放在最前面
+st.markdown("""
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+    /* 基础重置确保兼容性 */
+    html, body, [class*="css"]  {
+        font-family: 'Source Sans Pro', sans-serif;
+    }
+    
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        /* 主容器调整 */
+        .main .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            max-width: 100% !important;
+        }
+        
+        /* 标题调整 */
+        h1, h2, h3 {
+            font-size: 1.2rem !important;
+            text-align: center;
+        }
+        
+        /* 列布局在移动端改为垂直 */
+        .row-widget.stColumns {
+            flex-direction: column !important;
+        }
+        
+        .row-widget.stColumns > div {
+            width: 100% !important;
+            margin-bottom: 1rem;
+        }
+        
+        /* 按钮全宽度 */
+        .stButton > button {
+            width: 100% !important;
+            min-height: 3rem;
+            font-size: 1rem;
+        }
+        
+        /* 输入框调整 */
+        .stTextInput input, .stNumberInput input, .stSelectbox select {
+            font-size: 16px !important; /* 防止iOS缩放 */
+            height: 3rem !important;
+        }
+        
+        /* 状态卡片调整 */
+        [data-testid="stMetricValue"] {
+            font-size: 1.5rem !important;
+        }
+        
+        [data-testid="stMetricLabel"] {
+            font-size: 0.9rem !important;
+        }
+        
+        /* 隐藏不必要的元素 */
+        .stAppHeader {
+            display: none !important;
+        }
+    }
+    
+    /* 通用样式确保内容可见 */
+    .stApp {
+        background-color: white;
+    }
+    
+    /* 确保内容区域可见 */
+    .main {
+        background-color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 def main():
-    st.markdown("""
-        <style>
-        @media (max-width: 768px) {
-            .main .block-container {
-                padding-top: 2rem;
-                padding-bottom: 2rem;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            .stButton>button {
-                width: 100%;
-            }
-            .stNumberInput, .stTextInput, .stSelectbox {
-                width: 100% !important;
-            }
-        }
-        </style>
-        """, unsafe_allow_html=True)
     """
     主应用入口函数
 
@@ -57,8 +107,9 @@ def main():
     - 显示应用标题
     - 调用状态显示函数展示当前系统状态
     """
-    # 应用主标题
-    st.header("水晶能量计算器 Beta 0.0.1")  # 显示带图标的标题
+    # 应用主标题 - 添加容器确保可见
+    with st.container():
+        st.header("🧊 水晶能量计算器 Beta 0.0.1")  # 显示带图标的标题
 
     # 显示当前系统状态
     show_current_status()
@@ -85,83 +136,102 @@ def show_current_status():
         from utils.file_utils import load_json
 
         # 创建子标题
-        st.subheader("当前系统状态")
+        st.subheader("📊 当前系统状态")
 
-        # 创建三列布局，用于并排显示三个状态卡片
-        col1, col2, col3 = st.columns(3)
+        # 在移动端使用垂直布局，桌面端使用水平布局
+        if check_mobile():
+            # 移动端垂直布局
+            st.info("📱 移动端模式")
 
-        # 第一列：显示RSI（胰岛素敏感系数）状态
-        with col1:
-            # 从rsi_data.json文件加载RSI数据
-            rsi_data = load_json('rsi_data.json')
+            with st.container():
+                # RSI状态
+                rsi_data = load_json('rsi_data.json')
+                if rsi_data:
+                    st.success(f"**RSI值**: {rsi_data['rsi_value']}")
+                    if 'timestamp' in rsi_data:
+                        st.caption(f"最后更新: {rsi_data['timestamp']}")
+                else:
+                    st.error("**RSI值**: 未校准")
+                    st.caption("请先进行RSI校准")
 
-            # 检查RSI数据是否成功加载
-            if rsi_data:
-                # 显示成功的状态信息和RSI值
-                st.success(f"**RSI值**: {rsi_data['rsi_value']}")
+                # ISF状态
+                isf_data = load_json('isf_data.json')
+                if isf_data:
+                    st.success(f"**ISF值**: {isf_data['isf_value']} mmol/L/U")
+                    if 'timestamp' in isf_data:
+                        st.caption(f"最后更新: {isf_data['timestamp']}")
+                else:
+                    st.error("**ISF值**: 未校准")
+                    st.caption("请先进行ISF校准")
 
-                # 如果数据中包含时间戳，显示最后更新时间
-                if 'timestamp' in rsi_data:
-                    st.caption(f"最后更新: {rsi_data['timestamp']}")
-            else:
-                # 如果数据加载失败，显示错误状态
-                st.error("**RSI值**: 未校准")
-                st.caption("请先进行RSI校准")  # 提示用户需要执行校准操作
+                # 食物数据状态
+                food_data = load_json('foods_data.json')
+                if food_data:
+                    st.success(f"**食物数据**: {len(food_data)} 种")
+                    recent_foods = food_data[-3:] if len(food_data) >= 3 else food_data
+                    food_list = "  ".join([f"• {food['name']}" for food in recent_foods])
+                    st.caption(f"最近录入: {food_list}")
+                else:
+                    st.warning("**食物数据**: 0 种")
+                    st.caption("请先录入食物信息")
+        else:
+            # 桌面端水平布局
+            col1, col2, col3 = st.columns(3)
 
-        # 第二列：显示ISF（胰岛素敏感因子）状态
-        with col2:
-            # 从isf_data.json文件加载ISF数据
-            isf_data = load_json('isf_data.json')
+            with col1:
+                rsi_data = load_json('rsi_data.json')
+                if rsi_data:
+                    st.success(f"**RSI值**: {rsi_data['rsi_value']}")
+                    if 'timestamp' in rsi_data:
+                        st.caption(f"最后更新: {rsi_data['timestamp']}")
+                else:
+                    st.error("**RSI值**: 未校准")
+                    st.caption("请先进行RSI校准")
 
-            # 检查ISF数据是否成功加载
-            if isf_data:
-                # 显示成功的状态信息和ISF值（带单位）
-                st.success(f"**ISF值**: {isf_data['isf_value']} mmol/L/U")
+            with col2:
+                isf_data = load_json('isf_data.json')
+                if isf_data:
+                    st.success(f"**ISF值**: {isf_data['isf_value']} mmol/L/U")
+                    if 'timestamp' in isf_data:
+                        st.caption(f"最后更新: {isf_data['timestamp']}")
+                else:
+                    st.error("**ISF值**: 未校准")
+                    st.caption("请先进行ISF校准")
 
-                # 如果数据中包含时间戳，显示最后更新时间
-                if 'timestamp' in isf_data:
-                    st.caption(f"最后更新: {isf_data['timestamp']}")
-            else:
-                # 如果数据加载失败，显示错误状态
-                st.error("**ISF值**: 未校准")
-                st.caption("请先进行ISF校准")  # 提示用户需要执行校准操作
-
-        # 第三列：显示食物数据库状态
-        with col3:
-            # 从foods_data.json文件加载食物数据
-            food_data = load_json('foods_data.json')
-
-            # 检查食物数据是否成功加载
-            if food_data:
-                # 显示成功的状态信息和食物种类数量
-                st.success(f"**食物数据**: {len(food_data)} 种")
-
-                # 获取最近录入的3种食物
-                recent_foods = food_data[-3:]
-                # 格式化显示最近录入的食物列表
-                food_list = "\n".join([f"• {food['name']}" for food in recent_foods])
-                st.caption(f"最近录入:\n{food_list}")
-            else:
-                # 如果数据加载失败，显示警告状态
-                st.warning("**食物数据**: 0 种")
-                st.caption("请先录入食物信息")  # 提示用户需要录入食物信息
+            with col3:
+                food_data = load_json('foods_data.json')
+                if food_data:
+                    st.success(f"**食物数据**: {len(food_data)} 种")
+                    recent_foods = food_data[-3:]
+                    food_list = "\n".join([f"• {food['name']}" for food in recent_foods])
+                    st.caption(f"最近录入:\n{food_list}")
+                else:
+                    st.warning("**食物数据**: 0 种")
+                    st.caption("请先录入食物信息")
 
     except Exception as e:
-        """
-        异常处理块
-
-        功能:
-        - 捕获数据加载过程中可能出现的所有异常
-        - 显示通用的错误信息
-        - 提供详细的错误信息用于调试
-        """
         # 显示通用错误信息
-        st.error("数据加载错误")
-        # 显示具体的错误信息（在生产环境中可能需要更友好的提示）
+        st.error("❌ 数据加载错误")
+        # 显示具体的错误信息
         st.info(f"错误详情: {str(e)}")
+        # 提供调试建议
+        st.warning("💡 如果持续出现此错误，请检查数据文件是否存在且格式正确")
+
+
+def check_mobile():
+    """
+    简单的移动设备检测
+    在实际部署中，这可以通过用户代理检测实现
+    这里我们使用一个简化的版本
+    """
+    try:
+        # 这里可以添加更复杂的移动设备检测逻辑
+        # 暂时返回False，让CSS来处理响应式布局
+        return False
+    except:
+        return False
 
 
 # Python程序的入口点
-# 当直接运行此脚本时（而不是被导入为模块），执行main()函数
 if __name__ == "__main__":
     main()
