@@ -32,6 +32,24 @@ st.set_page_config(
 
 
 def main():
+    st.markdown("""
+        <style>
+        @media (max-width: 768px) {
+            .main .block-container {
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .stButton>button {
+                width: 100%;
+            }
+            .stNumberInput, .stTextInput, .stSelectbox {
+                width: 100% !important;
+            }
+        }
+        </style>
+        """, unsafe_allow_html=True)
     """
     主应用入口函数
 
