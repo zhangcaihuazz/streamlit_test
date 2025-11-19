@@ -1,41 +1,26 @@
 import streamlit as st
 
+# 最简化的页面配置，不使用任何自定义CSS
 st.set_page_config(
-    page_title="简单测试",
-    page_icon="✅",
+    page_title="极简测试",
+    page_icon="🔍",
     layout="centered"
 )
 
-# 最简单的移动端适配
-st.markdown("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body {
-    font-family: Arial, sans-serif;
-}
-</style>
-""", unsafe_allow_html=True)
+st.title("极简测试页面")
+st.write("这个页面只使用最基本的Streamlit组件")
 
-st.title("🚀 简单测试页面")
-st.write("如果这个页面能在手机上正常显示，说明部署环境正常")
+# 测试基本组件
+st.write("1. 基本文本显示 - 正常")
+st.info("2. 信息框 - 正常")
 
-st.success("✅ 这是一个成功消息")
-st.error("❌ 这是一个错误消息")
-st.warning("⚠️ 这是一个警告消息")
-
-st.write("---")
-
-# 一些简单的交互元素
-name = st.text_input("请输入您的名字", placeholder="例如：张三")
+# 测试输入组件
+name = st.text_input("3. 文本输入框")
 if name:
-    st.write(f"你好，{name}！")
+    st.write(f"你好，{name}")
 
-number = st.number_input("请输入一个数字", min_value=0, max_value=100, value=50)
-st.write(f"您输入的数字是: {number}")
+# 测试按钮
+if st.button("4. 测试按钮"):
+    st.success("按钮工作正常！")
 
-if st.button("点击测试"):
-    st.balloons()
-    st.success("按钮点击成功！")
-
-st.write("---")
-st.info("如果这个简单页面在手机上能正常显示，那么问题出在您的应用代码中。如果不能显示，则是部署环境的问题。")
+st.write("5. 页面加载完成")
