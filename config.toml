@@ -1,0 +1,30 @@
+[server]
+headless = true
+address = "0.0.0.0"
+port = 8501
+enableCORS = true
+enableXsrfProtection = false
+
+[browser]
+serverAddress = "localhost"
+gatherUsageStats = false
+
+[client]
+caching = true
+showErrorDetails = true
+
+[runner]
+fastReruns = false
+magicEnabled = false
+
+[theme]
+base = "light"
+primaryColor = "#ff4b4b"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#31333f"
+font = "sans serif"
+
+# 针对移动端的特殊设置
+[ui]
+hideTopBar = true
