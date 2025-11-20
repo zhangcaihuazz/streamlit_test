@@ -1,5 +1,12 @@
 import streamlit as st
 
+from polyfill import add_mobile_compatibility_polyfills, set_mobile_viewport
+
+def main():
+    # 添加移动端兼容性支持
+    add_mobile_compatibility_polyfills()
+    set_mobile_viewport()
+
 # 设置页面标题
 st.set_page_config(page_title="Streamlit 测试应用", layout="centered")
 
